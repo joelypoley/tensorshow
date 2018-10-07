@@ -7,7 +7,7 @@ Tensorshow can convert a TFRecord to a pandas dataframe.
 ```python
 import tensorshow
 
-# The column labels are the features of the tf.examples.
+# The column labels are the features of the tf.train.example protobufs.
 df = tensorshow.to_dataframe('path/to/tfrecord')
 ```
 
