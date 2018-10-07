@@ -24,4 +24,4 @@ Images stored as byte strings will be automatically detected and displayed as im
 
 Tensorshow can be used in a jupyter notebook to preview a tfrecord. The `show_head` function will show the first 5 `tf.train.example`s by default and the `show_random` function will show five random `tf.train.example`s from the tfrecord.
 
-![A preview of a TFRecord in a jupyter notebook](https://github.com/joelypoley/tensorshow/blob/master/img/html_table.png)
+![A preview of a TFRecord in a jupyter notebook](https://github.com/joelypoley/tensorshow/blob/master/img/show_head.png)
