@@ -2,7 +2,7 @@
 
 Tensorshow is a python library for inspecting [TFRecords](https://www.tensorflow.org/api_guides/python/reading_data#file_formats).
 
-Tensorshow can convert a TFRecord to a pandas dataframe
+Tensorshow can convert a TFRecord to a pandas dataframe.
 
 ```python
 import tensorshow
