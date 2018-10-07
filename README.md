@@ -14,10 +14,10 @@ df = tensorshow.to_dataframe('path/to/tfrecord')
 Tensorshow can be used as a command line utility. It will convert a tfrecord to an html file on the command line.
 
 ```bash
-python tensorshow --tfrecord='path/to/tfrecord' --html_file='path/to/html_file'
+python tensorshow --tfrecord='/Users/joel/train.tfrecord' --html_file='Users/joel/out.html'
 ```
 
-Images stored as byte strings will be automatically detected and displayed as images rather than text. The resulting file looks like this.
+Images stored as byte strings will be automatically detected and displayed as images rather than text. The `out.html` file looks like this when you open it with a browser.
 
 ![TFRecord displayed as a table](https://github.com/joelypoley/tensorshow/blob/master/html_table.png)
 
