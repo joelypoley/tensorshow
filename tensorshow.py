@@ -1,3 +1,4 @@
+import argparse
 import itertools
 import random
 
@@ -68,6 +69,13 @@ td {
 </head>
 """
 
+def _initialise_flags(args_parser):
+    args_parser.add_argument("--tfrecord", required=True)
+    args_parser.add_argument("--html-file", required=True)
+    args_parser.add_argument("--at-most", type=int, default=-1)
+    args_parser.add_argument("--random", type=bool, default=False)
+
+    return args_parser.parse_args()
 
 def feature_to_list(feat):
     kind = feat.WhichOneof("kind")
@@ -106,7 +114,7 @@ def random_sample(tfrecord_path, max_rows=None):
 
 
 def to_dataframe(tfrecord_path, max_rows=None):
-    if max_rows is None:
+    if max_rows is None or max_rows < 0:
         # 2**63 bytes is ~9 exabytes, so max_rows is essentially infinite.
         max_rows = 1 << 63
 
@@ -177,3 +185,11 @@ def to_html_file(
             formatters={col: image_formatter for col in cols_with_images(df)},
             escape=False,
         )
+
+
+if __name__ == '__main__':
+    args_parser = argparse.ArgumentParser()
+    FLAGS = _initialise_flags(args_parser)
+    to_html_file(FLAGS.tfrecord, FLAGS.html_file, FLAGS.at_most, FLAGS.random) 
+
+
