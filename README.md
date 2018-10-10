@@ -19,9 +19,9 @@ python tensorshow --tfrecord=/Users/joel/train.tfrecord --html_file=Users/joel/o
 
 Images stored as byte strings will be automatically detected and displayed as images rather than text. The `out.html` file looks like this when you open it with a browser.
 
-![TFRecord displayed as a table](https://github.com/joelypoley/tensorshow/blob/master/img/html_table.png)
+![TFRecord displayed as a table](http://www.joellaity.com/img/html_tensorshow_example.png)
 
 
 Tensorshow can be used in a jupyter notebook to preview a TFRecord. The `show_head` function will show the first 5 `tf.train.example`s by default and the `show_random` function will show five random `tf.train.example`s from the tfrecord.
 
-![A preview of a TFRecord in a jupyter notebook](https://github.com/joelypoley/tensorshow/blob/master/img/show_head.png)
+![A preview of a TFRecord in a jupyter notebook](http://www.joellaity.com/img/nb_tensorshow_example.png)
