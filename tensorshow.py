@@ -151,7 +151,7 @@ def cols_with_images(df):
     return res
 
 
-def show_head(tfrecord_path, at_most=5):
+def head(tfrecord_path, at_most=5):
     df = to_dataframe(tfrecord_path, max_rows=at_most)
     pd.set_option("display.max_colwidth", -1)
     html_all = df.to_html(
