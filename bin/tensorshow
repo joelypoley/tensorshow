@@ -14,4 +14,4 @@ def _initialise_flags(args_parser):
 
 args_parser = argparse.ArgumentParser()
 FLAGS = _initialise_flags(args_parser)
-html_file_from(FLAGS.tfrecord, FLAGS.html_file, FLAGS.limit)
+html_file_from(FLAGS.tfrecord, FLAGS.html_file, limit=FLAGS.limit)
