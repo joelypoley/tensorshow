@@ -2,6 +2,16 @@
 
 Tensorshow is a python module for inspecting [TFRecords](https://www.tensorflow.org/api_guides/python/reading_data#file_formats).
 
+## Installation
+
+Requires python 3.6.
+
+```bash
+pip install tensorshow
+```
+
+## Examples
+
 Tensorshow can convert a TFRecord to a pandas dataframe.
 
 ```python
