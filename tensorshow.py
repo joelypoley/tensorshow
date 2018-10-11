@@ -69,15 +69,17 @@ td {
 </head>
 """
 
+
 def _initialise_flags(args_parser):
     args_parser.add_argument("--tfrecord", required=True)
     args_parser.add_argument("--html-file", required=True)
-    args_parser.add_argument("--at-most", type=int, default=-1)
+    args_parser.add_argument("--limit", type=int, default=-1)
     args_parser.add_argument("--random", type=bool, default=False)
 
     return args_parser.parse_args()
 
-def feature_to_list(feat):
+
+def _feature_to_list(feat):
     kind = feat.WhichOneof("kind")
     if kind == "float_list":
         return list(feat.float_list.value)
@@ -89,58 +91,35 @@ def feature_to_list(feat):
         assert false
 
 
-def example_to_dict(example_str):
+def _example_to_dict(example_str):
     example = tf.train.Example()
     example.ParseFromString(example_str)
     d = dict(example.features.feature)
-    return {k: feature_to_list(v) for k, v in d.items()}
+    return {k: _feature_to_list(v) for k, v in d.items()}
 
 
-def random_sample(tfrecord_path, max_rows=None):
-    if max_rows is None or max_rows < 0:
-        return to_dataframe(tfrecord_path, max_rows=max_rows)
-
-    record_it = tf.python_io.tf_record_iterator(tfrecord_path)
-    running_sample = list(itertools.islice(record_it, max_rows))
-    num_seen_so_far = max_rows
-    for x in record_it:
-        num_seen_so_far += 1
-        idx_to_replace = random.randrange(num_seen_so_far)
-        if idx_to_replace < max_rows:
-            running_sample[idx_to_replace] = x
-
-    rows = [example_to_dict(record_str) for record_str in running_sample]
-    return pd.DataFrame(rows)
-
-
-def to_dataframe(tfrecord_path, max_rows=None):
-    if max_rows is None or max_rows < 0:
-        # 2**63 bytes is ~9 exabytes, so max_rows is essentially infinite.
-        max_rows = 1 << 63
-
-    record_it = tf.python_io.tf_record_iterator(tfrecord_path)
-    rows = [
-        example_to_dict(record_str) for _, record_str in zip(range(max_rows), record_it)
-    ]
-    return pd.DataFrame(rows)
-
-
-def image_to_base64(img_str):
+def _image_to_base64(img_str, thumbnail_size=(128, 128)):
     with BytesIO() as img_buffer:
         img_buffer.write(img_str)
         img = Image.open(img_buffer)
         img_buffer.seek(0)
-        img.thumbnail((128, 128), Image.ANTIALIAS)
+        img.thumbnail(thumbnail_size, Image.ANTIALIAS)
         with BytesIO() as thumb_buffer:
             img.save(thumb_buffer, format="JPEG")
             return str(base64.b64encode(thumb_buffer.getvalue()))[2:-1]
 
 
-def image_formatter(img):
-    return f'<img src="data:image/jpeg;base64,{image_to_base64(img[0])}">'
+def _image_formatter(thumbnail_size=(128, 128)):
+
+    def fmt_fn(img):
+        return (
+            f'<img src="data:image/jpeg;base64,{_image_to_base64(img[0], thumbnail_size=thumbnail_size)}">'
+        )
+
+    return fmt_fn
 
 
-def cols_with_images(df):
+def _cols_with_images(df):
     res = []
     for k in df.keys():
         if isinstance(df[k][0][0], bytes):
@@ -151,45 +130,79 @@ def cols_with_images(df):
     return res
 
 
-def head(tfrecord_path, at_most=5):
-    df = to_dataframe(tfrecord_path, max_rows=at_most)
+def dataframe_from(tfrecord_path, limit=None):
+    if limit is None or limit < 0:
+        # 2**63 bytes is ~9 exabytes, so limit is essentially infinite.
+        limit = 1 << 63
+
+    record_it = tf.python_io.tf_record_iterator(tfrecord_path)
+    rows = [
+        _example_to_dict(record_str) for _, record_str in zip(range(limit), record_it)
+    ]
+    return pd.DataFrame(rows)
+
+
+def sample_dataframe_from(tfrecord_path, limit=None):
+    if limit is None or limit < 0:
+        return dataframe_from(tfrecord_path, limit=limit)
+
+    record_it = tf.python_io.tf_record_iterator(tfrecord_path)
+    running_sample = list(itertools.islice(record_it, limit))
+    num_seen_so_far = limit
+    for x in record_it:
+        num_seen_so_far += 1
+        idx_to_replace = random.randrange(num_seen_so_far)
+        if idx_to_replace < limit:
+            running_sample[idx_to_replace] = x
+
+    rows = [_example_to_dict(record_str) for record_str in running_sample]
+    return pd.DataFrame(rows)
+
+
+def head(tfrecord_path, limit=5, thumbnail_size=(128, 128)):
+    df = dataframe_from(tfrecord_path, limit=limit)
     pd.set_option("display.max_colwidth", -1)
     html_all = df.to_html(
-        formatters={col: image_formatter for col in cols_with_images(df)}, escape=False
+        formatters={
+            col: _image_formatter(thumbnail_size) for col in _cols_with_images(df)
+        },
+        escape=False,
     )
     return HTML(html_all)
 
 
-def show_sample(tfrecord_path, at_most=5):
-    df = random_sample(tfrecord_path, max_rows=at_most)
+def sample(tfrecord_path, limit=5, thumbnail_size=(128, 128)):
+    df = sample_dataframe_from(tfrecord_path, limit=limit)
     pd.set_option("display.max_colwidth", -1)
     html_all = df.to_html(
-        formatters={col: image_formatter for col in cols_with_images(df)}, escape=False
+        formatters={
+            col: _image_formatter(thumbnail_size) for col in _cols_with_images(df)
+        },
+        escape=False,
     )
     return HTML(html_all)
 
 
-def to_html_file(
-    tfrecord_path, outfile, at_most=None, random=False, thumbnail_size=None
+def html_file_from(
+    tfrecord_path, outfile, limit=None, random=False, thumbnail_size=(128, 128)
 ):
-    # TODO: implement thumbnail_size
     if random:
-        df = random_sample(tfrecord_path, max_rows=at_most)
+        df = sample_dataframe_from(tfrecord_path, limit=limit)
     else:
-        df = to_dataframe(tfrecord_path, max_rows=at_most)
+        df = dataframe_from(tfrecord_path, limit=limit)
     pd.set_option("display.max_colwidth", -1)
     with open(outfile, "w+") as f:
         f.write(styling)
         df.to_html(
             buf=f,
-            formatters={col: image_formatter for col in cols_with_images(df)},
+            formatters={
+                col: _image_formatter(thumbnail_size) for col in _cols_with_images(df)
+            },
             escape=False,
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args_parser = argparse.ArgumentParser()
     FLAGS = _initialise_flags(args_parser)
-    to_html_file(FLAGS.tfrecord, FLAGS.html_file, FLAGS.at_most, FLAGS.random) 
-
-
+    html_file_from(FLAGS.tfrecord, FLAGS.html_file, FLAGS.limit, FLAGS.random)
