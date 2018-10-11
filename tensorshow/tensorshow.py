@@ -1,4 +1,3 @@
-import argparse
 import itertools
 import random
 
@@ -68,14 +67,6 @@ td {
 </style>
 </head>
 """
-
-
-def _initialise_flags(args_parser):
-    args_parser.add_argument("--tfrecord", required=True)
-    args_parser.add_argument("--html-file", required=True)
-    args_parser.add_argument("--limit", type=int, default=-1)
-
-    return args_parser.parse_args()
 
 
 def _feature_to_list(feat):
@@ -199,9 +190,3 @@ def html_file_from(
             },
             escape=False,
         )
-
-
-if __name__ == "__main__":
-    args_parser = argparse.ArgumentParser()
-    FLAGS = _initialise_flags(args_parser)
-    html_file_from(FLAGS.tfrecord, FLAGS.html_file, FLAGS.limit)
