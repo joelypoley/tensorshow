@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tensorshow",
-    version="0.0.1",
+    version="0.0.2",
     author="Joel Laity",
     author_email="joel.laity@gmail.com",
     description="A python module and commaned line tool for inspecting TFRecords.",
