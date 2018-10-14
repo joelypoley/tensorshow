@@ -18,7 +18,7 @@ Tensorshow can convert a TFRecord to a pandas dataframe.
 import tensorshow
 
 # The column labels of `df` are the features of the tf.train.example protobufs.
-df = tensorshow.dataframe_from('path/to/tfrecord')
+df = tensorshow.dataframe_from('path/to/tfrecord', limit=100)
 ```
 <!---
 Tensorshow can be used as a command line utility. It will convert a tfrecord to an html file on the command line.
